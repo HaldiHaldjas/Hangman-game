@@ -52,9 +52,6 @@ class Controller:
         self.__game_time.start()
         self.__view.change_image(0)
         self.__model.play()
-        # todo correct_letters
-        # todo vigased tähed
-
         self.__view.lbl_result['text'] = self.__model.guess
         self.__view.lbl_error['text'] = "Vigased tähed"
 
@@ -80,7 +77,7 @@ class Controller:
         self.__view.change_image(self.__model.tries_list)
 
     def game_over(self):
-        if self.__guessed == True:
+        if self.__model.guessed:
             name = simpledialog.askstring("Mäng on läbi! Sisesta enda nimi: ")
             if name:
                 self.__model.save_score(name, self.__game_time.counter)

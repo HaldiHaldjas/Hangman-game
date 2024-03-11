@@ -43,7 +43,7 @@ class Model:
         return self.__image_files
 
     @property
-    def word_list(self):
+    def words_list(self):
         return self.__word
 
     @property
@@ -58,7 +58,7 @@ class Model:
     def guess(self):
         return self.__guess
 
-    def guessed(self):
+    def guessed_word(self):
         return self.__guessed
 
     @database.setter
@@ -127,9 +127,9 @@ class Model:
         guessed_letters = []
         guessed_words = []
         word_complete = "_" * len(word)
-        guessed = False
+        self.__guessed = False
         tries = 12
-        while not guessed and tries > 0:
+        while not self.__guessed and tries > 0:
             # guess view failist
             guess = self.__view.get_guess()
             # sisestuse kontroll
@@ -163,7 +163,7 @@ class Model:
                     tries -= 1
                     guessed_words.append(guess)
                 else:
-                    guessed = True
+                    self.__guessed = True
                     word_complete = word
                     print("Tubli!", guess, "ongi õige sõna!")
 
@@ -173,7 +173,7 @@ class Model:
             # näita mängu hetkeiseisu
             self.__view.display_game_status(word_complete, guessed_letters, tries)
 
-        if guessed == True:
+        if self.__guessed == True:
             print("Palju õnne, õige sõna ongi ", word)
         else:
             print("Mäng on läbi! Sul ei õnnestunud sõna ära arvata! Õige sõna oli ", word)
