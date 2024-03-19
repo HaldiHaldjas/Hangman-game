@@ -3,10 +3,12 @@ import sqlite3
 from datetime import datetime
 from Score import Score
 
+
 class Model:
     def __init__(self):
         self.__database = 'databases/hangman_words_ee.db'  # Andmebaas
         self.__image_files = glob.glob('images/*.png')  # List, mis sisaldab pilte
+        # self.__correct_letters = ['_'] * len(self.__word)
         self.__word = ''
         self.__typed_letters = []
         self.__wrong_guesses = 0
@@ -96,7 +98,6 @@ class Model:
 
         # Meetod mis seadistab uue mängu
     def process_player_input(self, text):
-        # self.__correct_letters = []
         if text:
             guess = text[0].strip().lower()
             self.__typed_letters.append(guess)
@@ -104,13 +105,28 @@ class Model:
             if guess in word_letters:
                 for index, letter in enumerate(word_letters):
                     if guess == letter:
+                        self.__correct_letters = list(self.correct_letters)
                         self.__correct_letters[index] = guess
             else:
                 self.__wrong_guesses += 1
                 if guess in self.__typed_letters and guess not in self.__wrong_letters:
                     self.__wrong_letters.append(guess)
 
-    def list_to_string(char_list):
+        # print('self.__typed_letters', self.__typed_letters)
+        # print('self.__correct_letters', self.__correct_letters)
+        # print(text)
+        # if text:
+        #     guess = text[0].strip().lower()
+        #     print(guess)
+        #     self.__typed_letters.append(guess)
+        #     word_letters = list(self.__word.lower())
+        #     print('word_letters', word_letters)
+        #     # correct_dict = {}  # Initialize an empty dictionary
+        #     # self.correct_letters = list(self.correct_letters)
+        #     # self.correct_letters[index] = guess
+
+    @staticmethod
+    def list_to_string(self, char_list):
         return ', '.join(str(char_list))
 
     def add_player_score(self, name, game_time):

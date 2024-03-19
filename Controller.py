@@ -18,11 +18,6 @@ class Controller:
         self.__view.main()
 
     # kutsume nupu kliki valja
-    def button_scoreboard_click(self):
-        window = self.__view.create_scoreboard_window()
-        data = self.__model.read_scores_from_database()
-        self.__view.draw_scoreboard(window, data)
-        print(data)
 
     # I - kui mäng kuvatakse või alustatakse uuesti
     def buttons_no_game(self):
@@ -31,7 +26,7 @@ class Controller:
         self.__view.btn_send['state'] = 'disabled'
         self.__view.char_input.delete(0, 'end')  # Kustutab sisestuskasti sisu
         self.__view.char_input['state'] = 'disabled'
-        self.__view.change_image(0)
+        # self.__view.change_image(0)
 
     #  II -
     def buttons_game(self):
@@ -39,6 +34,7 @@ class Controller:
         self.__view.btn_cancel['state'] = 'normal'
         self.__view.btn_send['state'] = 'normal'
         self.__view.char_input['state'] = 'normal'
+        self.__view.change_image(1)
         self.__view.char_input.focus()
 
     # III - Mängu algus nupp "Uus mäng"
@@ -66,31 +62,37 @@ class Controller:
 
     # V - "Saada" nupp
     def btn_send_click(self):
-        input_value = self.__view.char_input.get()
+        input_value = self.__model.process_player_input(self.__view.char_input.get())
+        # self.__model.correct_letters)
         self.__model.process_player_input(input_value)
         self.__view.char_input.delete(0, 'end')
         self.__view.lbl_result['text'] = "".join(self.__model.correct_letters).upper()
         # self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(self.__model.wrong_letters)}'
-        wrong_letters = self.__model.wrong_letters
-        if wrong_letters:
-            self.__view.lbl_error['text'] = f'Vigased tähed: {self.__model.list_to_string(input_value)}'
-        else:
-            self.__view.lbl_error['text'] = ''  # Clear error message if no wrong letters
 
-        #self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(input_value)}'
         if self.__model.wrong_guesses > 0:
             self.__view.lbl_result['fg'] = 'red'
-        self.__view.change_image(self.__model.wrong_guesses)
+
         self.game_over()
 
+        self.__view.change_image(self.__model.wrong_guesses)
+
+    def button_scoreboard_click(self):
+        window = self.__view.create_scoreboard_window()
+        data = self.__model.read_scores_from_database()
+        self.__view.draw_scoreboard(window, data)
+
     def game_over(self):
-        input = self.__view.char_input.get()
         game_over = False
         game_guessed = False
-        if self.__model.word.lower() == self.__model.list_to_string(input):
-        # if self.__model.word.lower() == self.__model.list_to_string(self.__correct_letters):
+        if self.__model.wrong_guesses == 11:
+            game_over = True
+            print('Kaotasid!')
+
+        if self.__model.word.lower() == list(self.__model.correct_letters):
+            # if self.__model.word.lower() == self.__model.list_to_string(self.__correct_letters):
             game_guessed = True
             game_over = True
+            print(game_guessed, game_over)
 
         if game_over:
             self.__game_time.stop()
@@ -99,8 +101,3 @@ class Controller:
                 name = simpledialog.askstring('Mäng läbi', 'Mäng läbi! \nSisesta mängija nimi:')
                 if name:
                     self.__model.add_player_score(name, self.__game_time.counter)
-        # if "".join(self.__model.correct_letters) == self.__model.word:
-        #     self.btn_cancel_click()
-        #     self.__view.show_message()
-        #     self.__view.game_over()
-

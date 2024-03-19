@@ -52,12 +52,12 @@ class View(Tk):
         if messagebox.askokcancel("Kas soovid mängust väljuda?"):
             self.destroy()
 
-    def game_over(self):
-        player_name = simpledialog.askstring("Game Over", "Enter your name:")
-        if player_name:
-            response = messagebox.askyesno("Game Over", "Do you want to start a new game?")
-            if response:
-                self.__controller.btn_new_click()
+    # def game_over(self):
+    #     player_name = simpledialog.askstring("Game Over", "Enter your name:")
+    #     if player_name:
+    #         response = messagebox.askyesno("Game Over", "Do you want to start a new game?")
+    #         if response:
+    #             self.__controller.btn_new_click()
 
     @property
     def btn_new(self):
@@ -162,11 +162,6 @@ class View(Tk):
     def display_word(self, word):
         self.__lbl_word.config(text=word)
 
-    def change_image(self, image_id):  # pildi id = vigade number
-        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[image_id]))
-        self.__lbl_image.configure(image=self.__image)
-        self.__lbl_image.image = self.__image
-
     def show_message(result):
         if result == "won":
             messagebox.showinfo("Palju õnne! Arvasid sõna ära!")
@@ -217,3 +212,8 @@ class View(Tk):
                 #  aega muudetakse iga kord, sest info on erinev
                 x += 1
             my_table.pack(expand=True, fill=BOTH)
+
+    def change_image(self, image_id):  # pildi id = vigade number
+        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[image_id]))
+        self.__lbl_image.configure(image=self.__image)
+        self.__lbl_image.image = self.__image
