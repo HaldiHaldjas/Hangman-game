@@ -61,7 +61,8 @@ class Controller:
         self.__game_time.stop()  # Aeg seisma
         self.__view.change_image(-1)
         self.buttons_no_game()
-        self.__view.lbl_result.config['text'] = 'Mängime!'.upper()
+        # self.__view.lbl_result.config['text'] = 'Mängime!'.upper()
+        self.__view.lbl_result.config(text='Mängime!'.upper())
 
     # V - "Saada" nupp
     def btn_send_click(self):
@@ -70,7 +71,13 @@ class Controller:
         self.__view.char_input.delete(0, 'end')
         self.__view.lbl_result['text'] = "".join(self.__model.correct_letters).upper()
         # self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(self.__model.wrong_letters)}'
-        self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(input_value)}'
+        wrong_letters = self.__model.wrong_letters
+        if wrong_letters:
+            self.__view.lbl_error['text'] = f'Vigased tähed: {self.__model.list_to_string(input_value)}'
+        else:
+            self.__view.lbl_error['text'] = ''  # Clear error message if no wrong letters
+
+        #self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(input_value)}'
         if self.__model.wrong_guesses > 0:
             self.__view.lbl_result['fg'] = 'red'
         self.__view.change_image(self.__model.wrong_guesses)
