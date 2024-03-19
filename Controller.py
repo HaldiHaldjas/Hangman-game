@@ -65,9 +65,17 @@ class Controller:
         result = "".join(self.__model.correct_letters).upper()
         self.__view.lbl_result['text'] = result
         # self.__view.lbl_result['text'] = "".join(self.__model.correct_letters).upper()
-        # self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(self.__model.wrong_letters)}'
 
-        if self.__model.wrong_guesses:
+        # vigaswed tähed
+        wrong = "".join(self.__model.list_to_string(char_list=self.__model.wrong_letters).upper())
+        wrong_filtered = ''
+        for char in wrong:
+            if char.isalpha():
+                wrong_filtered += char
+
+        self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(wrong_filtered)}'
+
+        if self.__model.wrong_guesses == 10:
             self.__view.lbl_result['fg'] = 'red'
 
         self.__view.change_image(self.__model.wrong_guesses)
