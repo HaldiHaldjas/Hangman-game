@@ -1,22 +1,18 @@
+from tkinter import simpledialog
+
 from GameTime import GameTime
 from Model import Model
 from View import View
-from tkinter import simpledialog
 
 
 class Controller:
-    def __init__(self, db_name=None):  # Kui andmebaasil on nimi, kasutab seda, kui ei, siis None
-
-        self.__view = View()  # self - fail, kus me praegu oleme
-        self.__model = Model(self.__view)
-
-        # siin loodud controllerit kasutame ka Views!
-        if db_name is not None:  # kui DB nimi on olemas
+    def __init__(self, db_name=None):
+        self.__model = Model()
+        self.__view = View(self, self.__model)
+        if db_name is not None:
             self.__model.database = db_name
-        # mänguaja objekt
         self.__game_time = GameTime(self.__view.lbl_time)
         #  print(self.__model.database) käsurealt käivitamiseks
-
 
     def main(self):
         self.__view.main()
@@ -24,88 +20,80 @@ class Controller:
     # kutsume nupu kliki valja
     def button_scoreboard_click(self):
         window = self.__view.create_scoreboard_window()
-        data = self.__model.read_data_from_database()
+        data = self.__model.read_scores_from_database()
         self.__view.draw_scoreboard(window, data)
+        print(data)
 
-        # kui mäng lõppeb või alustatakse uuesti
+    # I - kui mäng kuvatakse või alustatakse uuesti
     def buttons_no_game(self):
         self.__view.btn_new['state'] = 'normal'
         self.__view.btn_cancel['state'] = 'disabled'
         self.__view.btn_send['state'] = 'disabled'
         self.__view.char_input.delete(0, 'end')  # Kustutab sisestuskasti sisu
         self.__view.char_input['state'] = 'disabled'
+        self.__view.change_image(0)
 
-
-    #  Mängu algus
-    def buttons_to_game(self):
+    #  II -
+    def buttons_game(self):
         self.__view.btn_new['state'] = 'disabled'
         self.__view.btn_cancel['state'] = 'normal'
         self.__view.btn_send['state'] = 'normal'
         self.__view.char_input['state'] = 'normal'
         self.__view.char_input.focus()
 
-    # funktsioon uuele mängule
+    # III - Mängu algus nupp "Uus mäng"
     def btn_new_click(self):
-        self.buttons_to_game()  # Nupud aktiivseks
+        self.buttons_game()  # Nupud aktiivseks
         # aja reset ja restart
         self.__game_time.reset()
         self.__game_time.start()
+
+        self.__model.new_game()
+        word_length = len(self.__model.word)
+        initial_text = '_' * word_length
+        self.__view.lbl_result['text'] = self.__model.correct_letters
+        self.__view.lbl_error.config(text="")
         self.__view.change_image(0)
-        self.__model.play()
-        self.__view.lbl_result['text'] = self.__model.guess
-        self.__view.lbl_error['text'] = "Vigased tähed"
+        # self.game_over()
 
-
-
-        # TODO Mängu pilt muuda esimeseks (ISESESIVALT TUNNIS KOHE) - tehtud
-        # TODO Seadista mudelis uus mäng. Juhuslik sõna andmebaasist vaja kätte saada - tehtud
-        # TODO Näita äraarvatavat sõna aga iga tähe asemel on allkriips. Kirjastiil on big_font
-        # TODO Veateadete label muuda tekst "Vigased tähed:"
-
-
-
+    # IV - "Loobu" nupp
     def btn_cancel_click(self):
         self.__game_time.stop()  # Aeg seisma
+        self.__view.change_image(-1)
         self.buttons_no_game()
-        self.__view.change_image(len(self.__model.image_files) - 1)
-        self.__view.lbl_result['text'] = 'Mängime!'.upper()
+        self.__view.lbl_result.config['text'] = 'Mängime!'.upper()
 
+    # V - "Saada" nupp
     def btn_send_click(self):
-        guess = self.__model.play(self.__view.char_input())
-        self.__view.lbl_result['text'] = "".join(self.__model.letters)
-        self.__view.lbl_error['text'] = "Vigased tähed!"
-        self.__view.change_image(self.__model.tries_list)
+        input_value = self.__view.char_input.get()
+        self.__model.process_player_input(input_value)
+        self.__view.char_input.delete(0, 'end')
+        self.__view.lbl_result['text'] = "".join(self.__model.correct_letters).upper()
+        # self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(self.__model.wrong_letters)}'
+        self.__view.lbl_error['text'] = f'Vigased tähed {self.__model.list_to_string(input_value)}'
+        if self.__model.wrong_guesses > 0:
+            self.__view.lbl_result['fg'] = 'red'
+        self.__view.change_image(self.__model.wrong_guesses)
+        self.game_over()
 
     def game_over(self):
-        if self.__model.guessed:
-            name = simpledialog.askstring("Mäng on läbi! Sisesta enda nimi: ")
-            if name:
-                self.__model.save_score(name, self.__game_time.counter)
+        input = self.__view.char_input.get()
+        game_over = False
+        game_guessed = False
+        if self.__model.word.lower() == self.__model.list_to_string(input):
+        # if self.__model.word.lower() == self.__model.list_to_string(self.__correct_letters):
+            game_guessed = True
+            game_over = True
 
-
-
-        # TODO Loe sisestuskastist saadud info ja suuna mudelisse infot töötlema
-        # TODO Muuda teksti tulemus aknas (äraarvatav sõna)
-        # TODO Muuda teksti Vigased tähed
-        # TODO Tühjenda sisestuskast (ISESEISVALT TUNNIS KOHE)
-        # TODO KUI on vigu tekkinud, muuda alati vigade tekst punaseks ning näita vastavalt veanumbrile õiget pilti
-        # TODO on mäng läbi. MEETOD siin samas klassis.
-
-    # eraldi meetod
-    # TODO Kontrollida kas mäng on läbi.# TODO JAH puhul peata mänguaeg
-    # TODO Seadista nupud õigeks (meetod juba siin klassis olemas)
-    # TODO Küsi mängija nime (simpledialog.askstring)
-    # TODO Saada sisestatud mängija nimi ja mängu aeg sekundites mudelisse kus toimub kogu muu tegevus kasutajanimega
-    # mänguaeg on muutujas self.__game_time.counter
-
-
-"""
-sisestuskastist huvitab vaid esimene märk. 
-Võrdlemise hetkel peavad mõlemad olema ühtemoodi väikesed.
-iga vale märgi korral peab vigade arv kasvama. 
-"""
-
-
-
-
+        if game_over:
+            self.__game_time.stop()
+            self.buttons_no_game()
+            if game_guessed:
+                name = simpledialog.askstring('Mäng läbi', 'Mäng läbi! \nSisesta mängija nimi:')
+                if name:
+                    self.__model.add_player_score(name, self.__game_time.counter)
+        # if "".join(self.__model.correct_letters) == self.__model.word:
+        #     self.btn_cancel_click()
+        #     self.__view.show_message()
+        #     self.__view.game_over()
 

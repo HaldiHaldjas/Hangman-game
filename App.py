@@ -3,7 +3,6 @@ import sys
 
 from Controller import Controller
 
-
 class App:
     def __init__(self, db):
         Controller(db).main()

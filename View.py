@@ -1,9 +1,10 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, messagebox, simpledialog
 import tkinter.font as font
 from datetime import datetime
 import time
 from PIL import ImageTk, Image  # PIP install Pillow
+
 
 class View(Tk):
     def __init__(self, controller, model):
@@ -31,11 +32,12 @@ class View(Tk):
         # edetabeli nupp ei muutu
 
         # piltide kuvamine - viimane pilt esimesena
-        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[len(self.__model.image_files) - 1]))
+        # self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[len(self.__model.image_files) - 1]))
+        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[11]))
         self.__lbl_image = None
 
         # loome 4 silti
-        self.__lbl_error, self.__lbl_time, self.__lbl_result = self.create_labels()
+        self.__lbl_error, self.__lbl_time, self.__lbl_result, self.__lbl_word = self.create_labels()
 
         # Sisestuskast teisel moel
         self.__char_input = Entry(self.__frame_top, justify='center', font=self.__default_font)
@@ -44,6 +46,18 @@ class View(Tk):
 
         # Enter klahvi funktsionaalsus
         self.bind('<Return>', lambda event: self.__controller.btn_send_click())
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self):
+        if messagebox.askokcancel("Kas soovid mängust väljuda?"):
+            self.destroy()
+
+    def game_over(self):
+        player_name = simpledialog.askstring("Game Over", "Enter your name:")
+        if player_name:
+            response = messagebox.askyesno("Game Over", "Do you want to start a new game?")
+            if response:
+                self.__controller.btn_new_click()
 
     @property
     def btn_new(self):
@@ -103,7 +117,7 @@ class View(Tk):
         send = Button(self.__frame_top, text='Saada', font=self.__default_font,
                       command=self.__controller.btn_send_click, state=DISABLED)
         (Button(self.__frame_top, text='Edetabel',
-               font=self.__default_font, command=self.__controller.button_scoreboard_click).
+                font=self.__default_font, command=self.__controller.button_scoreboard_click).
          grid(row=0, column=1, padx=5, pady=2, sticky=EW))
 
         new.grid(row=0, column=0, padx=5, pady=2, sticky=EW)
@@ -118,17 +132,18 @@ class View(Tk):
         error = Label(self.__frame_top, text='Vigased tähed', anchor='w', font=self.__default_bold)
         lbl_time = Label(self.__frame_top, text='00:00:00', font=self.__default_font)
         result = Label(self.__frame_bottom, text='Mängime'.upper(), font=self.__big_font)
-
+        word = Label(self.__frame_bottom, text='___'.upper(), font=self.__big_font)
         # kolm järgnevat labelit
         error.grid(row=2, column=0, columnspan=3, padx=5, pady=2, sticky=EW)
         lbl_time.grid(row=3, column=0, columnspan=3, padx=5, pady=2, sticky=EW)
         result.pack(padx=5, pady=2)  # pack, kuna on eraldi frame'i peal
+        word.pack(padx=5, pady=3)
 
         # Pildi paigutamine
         self.__lbl_image = Label(self.__frame_image, image=self.__image)
         self.__lbl_image.pack()
 
-        return error, lbl_time, result
+        return error, lbl_time, result, word
 
     def create_scoreboard_window(self):
         top = Toplevel(self)
@@ -138,19 +153,31 @@ class View(Tk):
         top.resizable(False, False)
         top.grab_set()  # Alumist akent klikkida ei saa
         top.focus()
-
         frame = Frame(top)
         frame.pack(fill=BOTH, expand=True)
         self.center(top, top_w, top_h)
 
         return frame
 
+    def display_word(self, word):
+        self.__lbl_word.config(text=word)
+
+    def change_image(self, image_id):  # pildi id = vigade number
+        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[image_id]))
+        self.__lbl_image.configure(image=self.__image)
+        self.__lbl_image.image = self.__image
+
+    def show_message(result):
+        if result == "won":
+            messagebox.showinfo("Palju õnne! Arvasid sõna ära!")
+        if result == "lost":
+            messagebox.showinfo("Kahjuks kaotasid!", "Ehk läheb järgmine mäng paremini.")
+
     def draw_scoreboard(self, frame, data):
         # argumedid sisse frame ja data ehk andmed, mis saab kontrollerist
         if len(data) > 0:  # kontrollib andmete olemasolu
             # Tabeli vaade
             my_table = ttk.Treeview(frame)
-
             # vertikaalne kerimisriba
             vsb = ttk.Scrollbar(frame, orient=VERTICAL, command=my_table.yview)
             vsb.pack(side=RIGHT, fill=Y)  # täitmine paremal, ülevalt alla
@@ -181,38 +208,12 @@ class View(Tk):
                 # aeg tuleb formaatida, et andmbaasi ja rakenduse aeg samad
                 dt = datetime.strptime(p.time, '%Y-%m-%d %H:%M:%S').strftime('%Y.%m.%Y %T')
                 sec = time.strftime('%T', time.gmtime(p.seconds))
-                my_table.insert(parent='', index='end', iid=str(x), text='',
-                                values=(p.name, p.word, p.missing, sec, dt))
+                my_table.insert(
+                    parent='',
+                    index='end',
+                    iid=str(x),
+                    text='',
+                    values=(p.name, p.word, p.missing, sec, dt))
                 #  aega muudetakse iga kord, sest info on erinev
-
                 x += 1
-
             my_table.pack(expand=True, fill=BOTH)
-
-        # Muudame nuppude kasutamist
-    def change_image(self, image_id ):  # pildi id = vigade number
-        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[image_id]))
-        self.__lbl_image.configure(image=self.__image)
-        self.__lbl_image.image = self.__image
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
