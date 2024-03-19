@@ -1,6 +1,7 @@
 import glob
 import sqlite3
 from datetime import datetime
+
 from Score import Score
 
 
@@ -111,36 +112,32 @@ class Model:
                 self.__wrong_guesses += 1
                 if guess in self.__typed_letters and guess not in self.__wrong_letters:
                     self.__wrong_letters.append(guess)
-
-        # print('self.__typed_letters', self.__typed_letters)
-        # print('self.__correct_letters', self.__correct_letters)
-        # print(text)
-        # if text:
-        #     guess = text[0].strip().lower()
-        #     print(guess)
-        #     self.__typed_letters.append(guess)
-        #     word_letters = list(self.__word.lower())
-        #     print('word_letters', word_letters)
-        #     # correct_dict = {}  # Initialize an empty dictionary
-        #     # self.correct_letters = list(self.correct_letters)
-        #     # self.correct_letters[index] = guess
+                    print("valed tahed: ", self.__wrong_letters)
 
     @staticmethod
-    def list_to_string(self, char_list):
+    def list_to_string(char_list):
         return ', '.join(str(char_list))
 
     def add_player_score(self, name, game_time):
         name = name.strip()
+        today = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         connection = None
+        wrong = "".join(self.list_to_string(char_list=self.__wrong_letters).upper())
+        wrong_filtered = ''
+        for char in wrong:
+            if char.isalpha():
+                wrong_filtered += char
+        print("wrong", wrong)
+        print("wrong_filtered", wrong_filtered)
         try:
             connection = sqlite3.connect(self.__database)
-            today = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            sql = 'INSERT INTO scores (name, word, missing, seconds, date_time) VALUES (?, ?, ?, ?, ?);'
+            sql = 'INSERT INTO scores (name, missing, word, seconds, date_time) VALUES (?, ?, ?, ?, ?);'
+            # print(sql)
             cursor = connection.cursor()
             cursor.execute(sql, (
                 name,
+                self.list_to_string(wrong_filtered),
                 self.__word,
-                self.list_to_string(str(self.__wrong_letters)),
                 game_time,
                 today))
             connection.commit()

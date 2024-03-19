@@ -2,10 +2,10 @@
 
 class Score:
 
-    def __init__(self, name, word, missing, seconds, time):
+    def __init__(self, name, missing, word, seconds, time):
         self.__name = name
-        self.__word = word
         self.__missing = missing
+        self.__word = word
         self.__seconds = seconds
         self.__time = time
 

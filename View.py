@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk, messagebox
 import tkinter.font as font
 from datetime import datetime
 import time
@@ -32,8 +32,8 @@ class View(Tk):
         # edetabeli nupp ei muutu
 
         # piltide kuvamine - viimane pilt esimesena
-        # self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[len(self.__model.image_files) - 1]))
-        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[11]))
+        self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[len(self.__model.image_files) - 1]))
+        # self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[0]))
         self.__lbl_image = None
 
         # loome 4 silti
@@ -49,8 +49,8 @@ class View(Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def on_closing(self):
-        if messagebox.askokcancel("Kas soovid mängust väljuda?"):
-            self.destroy()
+        messagebox.askokcancel("Hoiatus", "Kas soovid mängust väljuda?")
+        self.destroy()
 
     # def game_over(self):
     #     player_name = simpledialog.askstring("Game Over", "Enter your name:")
@@ -162,13 +162,15 @@ class View(Tk):
     def display_word(self, word):
         self.__lbl_word.config(text=word)
 
+    @staticmethod
     def show_message(result):
-        if result == "won":
+        if result == "Võitsid":
             messagebox.showinfo("Palju õnne! Arvasid sõna ära!")
-        if result == "lost":
+        if result == "Kaotasid!":
             messagebox.showinfo("Kahjuks kaotasid!", "Ehk läheb järgmine mäng paremini.")
 
-    def draw_scoreboard(self, frame, data):
+    @staticmethod
+    def draw_scoreboard(frame, data):
         # argumedid sisse frame ja data ehk andmed, mis saab kontrollerist
         if len(data) > 0:  # kontrollib andmete olemasolu
             # Tabeli vaade
@@ -217,3 +219,4 @@ class View(Tk):
         self.__image = ImageTk.PhotoImage(Image.open(self.__model.image_files[image_id]))
         self.__lbl_image.configure(image=self.__image)
         self.__lbl_image.image = self.__image
+        # return image_id
